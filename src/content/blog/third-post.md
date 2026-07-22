@@ -2,6 +2,7 @@
 title: 'Third post'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 22 2022'
+categories: [카테고리 테스트4, 카테고리 테스트1]
 heroImage: '../../assets/blog-placeholder-2.jpg'
 ---
 

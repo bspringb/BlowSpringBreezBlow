@@ -26,3 +26,14 @@ export async function getRelatedDocs(id: string): Promise<CollectionEntry<'blog'
 		.filter((post) => post.data.relatedObjects?.some((ref) => ref.id === id))
 		.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 }
+
+export async function getAllObjectTypes(): Promise<{ type: string; count: number }[]> {
+	const objects = await getCollection('objects');
+	const counts = new Map<string, number>();
+	for (const entry of objects) {
+		counts.set(entry.data.type, (counts.get(entry.data.type) ?? 0) + 1);
+	}
+	return [...counts.entries()]
+		.map(([type, count]) => ({ type, count }))
+		.sort((a, b) => a.type.localeCompare(b.type));
+}

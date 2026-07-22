@@ -4,7 +4,7 @@
 
 ## 새 글 쓰기
 
-`src/content/blog/` 아래에 `.md` 또는 `.mdx` 파일을 추가합니다. 파일 이름이 곧 URL 슬러그가 됩니다 (`my-post.md` → `/blog/my-post/`).
+`src/content/blog/` 아래에 `.md` 또는 `.mdx` 파일을 추가합니다. 파일 이름이 곧 URL 슬러그가 됩니다 (`my-post.md` → `/texts/my-post/`). 블로그 URL 프리픽스는 `/texts`이지만(예전엔 `/blog`), 컬렉션 이름과 폴더(`src/content/blog/`)는 내부적으로 그대로 `blog`입니다.
 
 frontmatter 필드:
 
@@ -13,72 +13,51 @@ frontmatter 필드:
 title: '글 제목'
 description: '목록/검색엔진에 노출될 한 줄 설명'
 pubDate: 'Jul 22 2026'
-updatedDate: 'Jul 23 2026'   # 선택. 수정한 경우에만
+updatedDate: 'Jul 23 2026'      # 선택. 수정한 경우에만
 heroImage: ../../assets/blog-placeholder-1.jpg   # 선택
-categories: [film, misc]     # 선택. 아래 "카테고리" 참고
+categories: [잡설, 대만 여행]     # 선택. 아래 "카테고리" 참고
+relatedObjects: [John Ford]     # 선택. 이 글이 다루는 objects 항목 (아래 "객체" 참고)
 ---
 ```
 
 - `title`, `description`, `pubDate`는 필수입니다.
-- `categories`를 생략하면 글 상세 페이지 상단 킥커에 "Essay"가 대신 표시되고, 카테고리 리스트 페이지(`/blog/film` 등)에는 나타나지 않습니다.
+- `categories`를 생략하면 글 상세 페이지 상단 킥커에 "Essay"가 대신 표시되고, 카테고리 리스트 페이지에는 나타나지 않습니다.
 - 스키마는 `src/content.config.ts`에서 관리합니다.
 
 ## 카테고리
 
-현재 유효한 카테고리 값은 `src/content/categories.ts`에 정의되어 있습니다:
-
-| 값 (frontmatter에 쓰는 값) | 라벨 |
-| --- | --- |
-| `film` | 영화 |
-| `music` | 음악 |
-| `book` | 책 |
-| `misc` | 잡설 |
-
-한 글에 여러 카테고리를 붙일 수 있습니다:
+카테고리는 **자유 문자열**입니다 — 고정 목록이나 별도 등록 파일이 없습니다. 글 frontmatter에 원하는 값을 바로 쓰면 그게 카테고리가 됩니다:
 
 ```yaml
-categories: [film, music]
+categories: [영화, 대만 여행]
 ```
 
-이렇게 하면 그 글은 `/blog/film`과 `/blog/music` 리스트 양쪽에 모두 나타납니다. "전체글"(`/blog`)은 카테고리가 아니라 필터 없는 기본 목록이라 frontmatter에 따로 쓰지 않습니다.
-
-값은 **고정 목록(enum)**이라, 목록에 없는 값을 쓰면(오타 포함) 빌드가 에러로 실패합니다 — 실수로 카테고리가 조용히 갈라지는 걸 막기 위한 설계입니다.
-
-### 새 카테고리 추가하는 법
-
-`src/content/categories.ts` 하나만 고치면 됩니다:
-
-```ts
-export const CATEGORY_KEYS = ['film', 'music', 'book', 'misc', 'travel'] as const;
-
-export const CATEGORY_META: Record<CategoryKey, { label: string; order: number }> = {
-  // ...기존 항목
-  travel: { label: '여행', order: 5 },
-};
-```
-
-이 파일이 스키마 검증(`content.config.ts`), 카테고리별 페이지 생성(`src/pages/blog/[category].astro`), 상단 탭(`CategoryTabs.astro`) 전부의 단일 출처입니다. 다른 파일은 건드릴 필요 없습니다.
+- 그 글은 `/texts/영화`와 `/texts/대만 여행` 리스트 양쪽에 모두 나타납니다.
+- "전체글"(`/texts`)은 카테고리가 아니라 필터 없는 기본 목록입니다.
+- **새 카테고리를 추가하는 데 코드 수정이 필요 없습니다.** 처음 보는 값을 쓰면 빌드 시 `/texts/<그값>` 페이지가 자동으로 생깁니다.
+- 값 자체가 화면에 그대로 보이는 라벨이므로, 오타를 내면(예: 한 글은 `영화`, 다른 글은 `film`) 그 오타도 별도의 카테고리로 갈라져 보입니다 — 표기를 통일해서 쓰세요. 이건 빌드 에러로 안 잡힙니다(자유 문자열이라 유효성 검사 대상이 아님).
+- 구현: `src/lib/categories.ts`의 `getAllCategories()`/`getPostsByCategory()`가 전체 글을 스캔해 존재하는 카테고리와 개수를 계산합니다. `CategoryTabs.astro`, `/texts/[category].astro`가 이걸 사용합니다.
 
 ## 링크 걸기
 
 마크다운/MDX 문법을 그대로 씁니다. Astro가 별도로 해줄 건 없습니다.
 
 ```md
-[다른 글 보기](/blowspringbreezeblow/blog/다른글슬러그/)
+[다른 글 보기](/blowspringbreezeblow/texts/다른글슬러그/)
 [외부 사이트](https://example.com)
 ```
 
 ## 객체(objects) 쓰기 — 감독/영화/단어/장소 등 뭐든
 
-scaruffi.com처럼 실체(감독, 영화, 단어, 장소, 여행지...)를 다루는 컬렉션입니다. `blog`와 별개이고, 카테고리 시스템과도 무관하게 동작합니다. **`directors`/`films`처럼 타입마다 컬렉션을 따로 만들지 않습니다** — `objects` 컬렉션 하나에 `type` 필드로 종류를 구분합니다.
+scaruffi.com처럼 실체(감독, 영화, 단어, 장소, 여행지...)를 다루는 컬렉션입니다. `blog`와 별개이고, 카테고리 시스템과도 무관하게 동작합니다. **타입마다 컬렉션을 따로 만들지 않습니다** — `objects` 컬렉션 하나에 `type` 필드로 종류를 구분합니다.
 
 `src/content/objects/`에 파일을 추가합니다. 파일 이름(확장자 제외)이 곧 객체 ID이자 URL(`/objects/<id>/`)입니다.
 
 ```yaml
 ---
-type: director              # 자유 문자열 — director, film, word, place, travel-spot 뭐든
+type: 감독                   # 자유 문자열 — 감독, 영화, 단어, 장소, 여행지 뭐든. 상단 메뉴에 그대로 라벨로 뜨니 한글 추천
 title: '감독 이름'
-description: '한 줄 소개'    # 선택
+description: '한 줄 소개'   # 선택
 attributes:                 # 선택, 자유 키-값. 타입마다 다른 속성을 써도 됩니다
   국가: 브라질
   활동시기: 1950-현재
@@ -88,20 +67,51 @@ image: ../../assets/xxx.jpg  # 선택
 본문에는 소개/에세이를 원하는 만큼 길게 씁니다.
 ```
 
-- **새 객체 타입을 추가하는 데 코드 수정이 필요 없습니다.** `type: word`라고 처음 쓰는 파일을 추가하면 그걸로 끝 — `/objects/type/word` 목록 페이지가 빌드 시 자동으로 생깁니다.
-- `attributes`는 완전히 자유 형식이라 타입마다 다른 속성 이름을 써도 됩니다(감독은 국가/활동시기, 단어는 어원/최초용례 등). 대신 오타를 컴파일 타임에 잡아주지는 않습니다.
-- `relatedObjects`에 존재하지 않는 파일명을 적으면(오타 포함) **빌드가 에러로 실패**합니다 — `reference()`가 검증해주기 때문입니다. 값은 대상 파일의 **파일명(확장자 제외)과 정확히 일치**해야 합니다.
-- 객체 상세 페이지(`/objects/<id>/`)에는 관련 객체와 관련 문서가 **양방향으로 자동 표시**됩니다 — A가 B를 `relatedObjects`로 가리키면, B의 페이지에도 A가 뜹니다 (별도로 양쪽에 다 적을 필요 없음). 이 로직은 `src/lib/objects.ts`의 `getRelatedObjects`/`getRelatedDocs`가 처리합니다.
-- 블로그 글에서도 `relatedObjects: [파일명]`으로 객체를 연결할 수 있습니다 — 그 글은 카테고리와 별개로, 연결한 객체의 "관련 문서" 목록에 나타납니다.
+- **새 객체 타입을 추가하는 데 코드 수정이 필요 없습니다.** `type: 단어`라고 처음 쓰는 파일을 추가하면 그걸로 끝 — `/objects/type/단어` 목록 페이지와 상단 메뉴 항목이 빌드 시 자동으로 생깁니다 (아래 "상단 내비게이션" 참고).
+- `attributes`는 완전히 자유 형식이라 타입마다 다른 속성 이름을 써도 됩니다. 대신 오타를 컴파일 타임에 잡아주지는 않습니다.
+- `relatedObjects`/글의 `relatedObjects`에 존재하지 않는 파일명을 적으면(오타 포함) **빌드가 에러로 실패**합니다 — `reference()`가 검증해주기 때문입니다. 값은 대상 파일의 **파일명(확장자 제외)과 정확히 일치**해야 합니다(대소문자·띄어쓰기 포함).
+- 객체 상세 페이지(`/objects/<id>/`)에는 관련 객체와 관련 문서가 **양방향으로 자동 표시**됩니다 — A가 B를 `relatedObjects`로 가리키면, B의 페이지에도 A가 뜹니다. 이 로직은 `src/lib/objects.ts`의 `getRelatedObjects`/`getRelatedDocs`가 처리합니다.
+- 블로그 글에서도 `relatedObjects: [파일명]`으로 객체를 연결할 수 있습니다 — 카테고리와 별개로, 연결한 객체의 "관련 문서" 목록에 나타납니다.
 
-`src/content/objects/example-director.md`, `example-film.md`는 이 구조가 실제로 동작하는지 확인하기 위한 예시입니다. 자유롭게 수정하거나 지우세요.
+`src/content/objects/example-*.md`는 이 구조가 실제로 동작하는지 확인하기 위한 테스트 데이터입니다(감독/영화 페어가 두 세트, `word`/`place` 타입 예시 포함). 자유롭게 수정하거나 지우세요.
 
-## 새 페이지 종류(리스트/상세 UI)를 추가하려면
+## 홈화면 구조 (사이드바 + 카테고리 그리드)
 
-객체 "타입"을 추가하는 건 위처럼 코드 없이 되지만, `objects` 자체와 별개로 완전히 다른 성격의 콘텐츠(예: 댓글, 갤러리)를 새로 만들고 싶다면 아직은 컬렉션을 새로 정의해야 합니다.
+홈(`/`)은 정적 목록이 아니라 상태를 가진 대시보드입니다 — React 아일랜드 두 개가 `nanostores`로 상태를 공유합니다.
+
+- `src/stores/pinnedCategories.ts`: 사이드바에 "고정"된 카테고리 이름 배열(클릭 순서). `pin()`/`unpin()`.
+- `src/components/react/CategoryGrid.tsx`: 카테고리별 블록(2~3열), 각 블록의 "+"가 위 스토어에 `pin()`.
+- `src/components/react/Sidebar.tsx`: 스토어를 구독 — 고정된 게 없으면 "전체글", 있으면 고정된 카테고리들을 클릭 순서대로 쌓아 보여줌(x로 `unpin()`).
+- 데이터(글 목록, 카테고리별 글)는 전부 `src/pages/index.astro`에서 빌드 타임에 계산해 두 컴포넌트에 props로 넘깁니다 — 컴포넌트들은 화면 상태(정렬 방향, 고정 여부)만 다루고 클라이언트에서 다시 데이터를 가져오지 않습니다.
+- 새 화면 상태를 이 홈화면에 추가할 때도 이 패턴(store + 여러 아일랜드가 구독)을 따르세요.
+
+## 상단 내비게이션 (최상위 객체 타입 + 블라인드)
+
+`src/components/Header.astro`는 로고/소셜링크만 담당합니다. 내비게이션은 `src/components/NavLinks.astro`가 그리는데, 구성이 두 부분으로 나뉩니다:
+
+- **`Texts`** — 블로그 글 목록(`/texts`)으로 가는 고정 링크. 블라인드 바깥에 항상 보입니다.
+- **객체 타입 블라인드** — `src/lib/objectNav.ts`의 `getNavTypeGroups()`가 `objects` 컬렉션에 실제로 존재하는 `type` 값들을 모아 최상위 항목으로 나열합니다. **새 객체 타입을 추가하면 코드 수정 없이 이 메뉴에도 자동으로 뜹니다.**
+- 특정 타입을 다른 타입 아래로 묶고 싶을 때(예: "감독"은 "영화" 아래에만), `objectNav.ts`의 `TYPE_CHILDREN` 레지스트리에 한 줄 추가하면 됩니다:
+  ```ts
+  const TYPE_CHILDREN: Record<string, string[]> = {
+    영화: ['감독'],
+  };
+  ```
+  여기 등록된 타입(`감독`)은 최상위 메뉴에 따로 뜨지 않고, 부모(`영화`)에 마우스를 올렸을 때 뜨는 팝업에만 나타납니다. 팝업은 항상 "자기 자신 + 하위 타입들"을 함께 보여줍니다(예: 영화 호버 → 영화, 감독).
+- 객체 `type` 값은 화면에 그대로 라벨로 쓰이므로, 카테고리와 마찬가지로 **한글로 쓰는 걸 추천합니다** (`type: 영화`, `type: 감독`처럼 — `type: film`이라고 쓰면 메뉴에 영어 그대로 뜹니다).
+
+이 블라인드는 항목이 늘어나 한 줄을 넘길 때를 대비한 것입니다:
+
+- `.nav-links`는 `flex-wrap`으로 감싸져 있고, 평소엔 `max-height`로 한 줄만 보이게 잘려 있습니다.
+- 우측 상단의 "펼치기" 버튼은 **평소엔 숨겨져 있다가**, 컴포넌트에 포함된 작은 스크립트가 `scrollHeight > clientHeight`로 실제 넘침을 감지했을 때만 나타납니다.
+- 버튼을 누르면 `max-height`가 커지면서 블라인드처럼 아래로 펼쳐집니다. 폭은 `Texts` 링크 옆, 로고와 소셜링크 사이 공간(`flex: 1 1 auto`)에 맞춰집니다.
+
+## 나중에 또 다른 새 "섹션"(컬렉션)을 추가하려면
+
+`objects`가 정확히 이 패턴의 실제 예시입니다. `blog`/`objects`와 성격이 완전히 다른 컨텐츠(예: 댓글, 갤러리)를 새로 만들고 싶다면 같은 방식을 따르세요.
 
 1. **콘텐츠 폴더 + 스키마 추가** (`src/content.config.ts`) — `objects` 정의를 참고하세요.
 2. **컬렉션 간 링크는 `reference()`로.** 참조 대상 ID가 실제로 존재하는지 빌드 타임에 검증됩니다.
-3. **리스트/상세 페이지는 `src/pages/objects/`처럼 `getStaticPaths` 기반 공용 템플릿으로.** 타입/카테고리를 가리지 않는 제네릭한 페이지 하나로 여러 종류를 처리하는 쪽이, 종류마다 페이지를 새로 만드는 것보다 낫습니다 (지금 `objects`가 정확히 이 패턴입니다).
+3. **리스트/상세 페이지는 `src/pages/objects/`처럼 `getStaticPaths` 기반 공용 템플릿으로.** 타입/카테고리를 가리지 않는 제네릭한 페이지 하나로 여러 종류를 처리하는 쪽이 낫습니다.
 
 이 문서도 함께 갱신하는 것 잊지 마세요.

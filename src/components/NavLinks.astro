@@ -1,0 +1,176 @@
+---
+import HeaderLink from './HeaderLink.astro';
+import { getNavTypeGroups } from '../lib/objectNav';
+
+const groups = await getNavTypeGroups();
+const base = import.meta.env.BASE_URL;
+---
+
+<div class="nav-links-wrap">
+	<HeaderLink href={`${base}texts`}>Texts</HeaderLink>
+	<div class="blind-wrap">
+		<div class="nav-links" id="nav-links">
+			{
+				groups.map((group) => (
+					<div class="hover-menu" data-nav-item>
+						<HeaderLink href={`${base}objects/type/${group.type}`}>{group.type}</HeaderLink>
+						{group.children.length > 0 && (
+							<div class="hover-popup">
+								<a href={`${base}objects/type/${group.type}`}>{group.type}</a>
+								{group.children.map((child) => (
+									<a href={`${base}objects/type/${child.type}`}>{child.type}</a>
+								))}
+							</div>
+						)}
+					</div>
+				))
+			}
+		</div>
+		<button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" hidden>
+			펼치기 ▾
+		</button>
+		<div class="nav-overflow" id="nav-overflow"></div>
+	</div>
+</div>
+
+<style>
+	.nav-links-wrap {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.5em;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.blind-wrap {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	/* 항상 보이는 한 줄 — 여기 들어있는 항목은 펼치기와 무관하게 자기 자리에 그대로 있다 */
+	.nav-links {
+		display: flex;
+		flex: 0 1 auto;
+		flex-wrap: nowrap;
+		align-items: center;
+		overflow: hidden;
+		min-width: 0;
+		height: 3.2em;
+	}
+	/* 한 줄에 남아있는 항목을 호버할 때만 클리핑을 잠시 풀어서 팝업이 안 잘리게 */
+	.nav-links:has(.hover-menu:hover),
+	.nav-links:has(.hover-menu:focus-within) {
+		overflow: visible;
+	}
+	.nav-toggle {
+		flex: 0 0 auto;
+		background: none;
+		border: none;
+		color: var(--ink-dim);
+		font-family: var(--font-sans);
+		font-size: 0.85em;
+		cursor: pointer;
+		padding: 1em 0.5em;
+	}
+	.nav-toggle:hover {
+		color: var(--accent-bright);
+	}
+	/* 안 보이던(넘쳤던) 항목만 여기로 옮겨져서, 검색창 자동완성처럼 아래에 붙어 뜬다.
+	   구글/사파리 주소창처럼 각지고 그림자만 있는 드롭다운 — 팝업 카드 아님. */
+	.nav-overflow {
+		display: none;
+		position: absolute;
+		top: 104%;
+		left: 0;
+		width: 83%;
+		flex-direction: row;
+		flex-wrap: wrap;
+		background: var(--bg);
+		border: 1px solid var(--rule);
+		box-shadow: 0px;
+		padding: 0em;
+		z-index: 20;
+	}
+	.nav-overflow.open {
+		display: flex;
+	}
+	.nav-links-wrap :global(a) {
+		padding: 1em 0.5em;
+		color: var(--ink-dim);
+		border-bottom: 2px solid transparent;
+		text-decoration: none;
+		font-size: 0.9em;
+		letter-spacing: 0.04em;
+	}
+	.nav-links-wrap :global(a.active) {
+		color: var(--ink);
+		text-decoration: none;
+		border-bottom-color: var(--accent-bright);
+	}
+	.hover-menu {
+		position: relative;
+		display: inline-block;
+		flex: 0 0 auto;
+		white-space: nowrap;
+	}
+	.hover-popup {
+		display: none;
+		position: absolute;
+		top: 100%;
+		left: 0;
+		flex-direction: column;
+		min-width: 8em;
+		background: var(--bg-raised);
+		border: 1px solid var(--rule);
+		border-radius: 4px;
+		padding: 0.4em 0;
+		z-index: 30;
+	}
+	.hover-popup a {
+		padding: 0.5em 1em;
+		border-bottom: none;
+	}
+	.hover-menu:hover .hover-popup,
+	.hover-menu:focus-within .hover-popup {
+		display: flex;
+	}
+</style>
+
+<script>
+	const container = document.getElementById('nav-links');
+	const toggle = document.getElementById('nav-toggle');
+	const overflowPanel = document.getElementById('nav-overflow');
+
+	if (container && toggle && overflowPanel) {
+		const items = Array.from(container.querySelectorAll<HTMLElement>(':scope > [data-nav-item]'));
+		const TOGGLE_RESERVED_WIDTH = 60;
+
+		const layout = () => {
+			// 측정을 정확히 하기 위해 일단 전부 원래 자리(한 줄)로 되돌린다.
+			items.forEach((item) => container.appendChild(item));
+
+			const containerRect = container.getBoundingClientRect();
+			const limit = containerRect.right - TOGGLE_RESERVED_WIDTH;
+
+			const overflowing = items.filter((item) => item.getBoundingClientRect().right > limit);
+
+			overflowPanel.replaceChildren(...overflowing);
+			toggle.hidden = overflowing.length === 0;
+			if (overflowing.length === 0) {
+				overflowPanel.classList.remove('open');
+				toggle.setAttribute('aria-expanded', 'false');
+				toggle.textContent = '펼치기 ▾';
+			}
+		};
+
+		toggle.addEventListener('click', () => {
+			const open = overflowPanel.classList.toggle('open');
+			toggle.setAttribute('aria-expanded', String(open));
+			toggle.textContent = open ? '접기 ▴' : '펼치기 ▾';
+		});
+
+		window.addEventListener('resize', layout);
+		layout();
+	}
+</script>

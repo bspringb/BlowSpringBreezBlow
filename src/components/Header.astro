@@ -1,23 +1,12 @@
 ---
 import { SITE_TITLE } from '../consts';
-import HeaderLink from './HeaderLink.astro';
+import NavLinks from './NavLinks.astro';
 ---
 
 <header>
 	<nav>
 		<h2><a href={import.meta.env.BASE_URL}>{SITE_TITLE}</a></h2>
-		<div class="internal-links">
-			<HeaderLink href={import.meta.env.BASE_URL}>Home</HeaderLink>
-			<HeaderLink href={`${import.meta.env.BASE_URL}texts`}>Blog</HeaderLink>
-			<div class="hover-menu">
-				<HeaderLink href={`${import.meta.env.BASE_URL}objects/type/film`}>영화</HeaderLink>
-				<div class="hover-popup">
-					<a href={`${import.meta.env.BASE_URL}objects/type/film`}>영화</a>
-					<a href={`${import.meta.env.BASE_URL}objects/type/director`}>감독</a>
-				</div>
-			</div>
-			<HeaderLink href={`${import.meta.env.BASE_URL}about`}>About</HeaderLink>
-		</div>
+		<NavLinks />
 		<div class="social-links">
 			<a href="https://m.webtoo.ls/@astro" target="_blank">
 				<span class="sr-only">Follow Astro on Mastodon</span>
@@ -73,44 +62,6 @@ import HeaderLink from './HeaderLink.astro';
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-	}
-	nav a {
-		padding: 1em 0.5em;
-		color: var(--ink-dim);
-		border-bottom: 2px solid transparent;
-		text-decoration: none;
-		font-size: 0.9em;
-		letter-spacing: 0.04em;
-	}
-	nav a.active {
-		color: var(--ink);
-		text-decoration: none;
-		border-bottom-color: var(--accent-bright);
-	}
-	.hover-menu {
-		position: relative;
-		display: inline-block;
-	}
-	.hover-popup {
-		display: none;
-		position: absolute;
-		top: 100%;
-		left: 0;
-		flex-direction: column;
-		min-width: 8em;
-		background: var(--bg-raised);
-		border: 1px solid var(--rule);
-		border-radius: 4px;
-		padding: 0.4em 0;
-		z-index: 10;
-	}
-	.hover-popup a {
-		padding: 0.5em 1em;
-		border-bottom: none;
-	}
-	.hover-menu:hover .hover-popup,
-	.hover-menu:focus-within .hover-popup {
-		display: flex;
 	}
 	.social-links,
 	.social-links a {

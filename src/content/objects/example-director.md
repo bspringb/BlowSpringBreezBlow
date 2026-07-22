@@ -1,5 +1,5 @@
 ---
-type: director
+type: 감독
 title: '예시 감독'
 description: 'objects 컬렉션 동작 확인용 예시 항목입니다. 편집하거나 삭제하세요.'
 ---

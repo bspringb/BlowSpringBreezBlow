@@ -1,5 +1,5 @@
 ---
-type: film
+type: 영화
 title: '예시 영화'
 description: 'objects 컬렉션과 relatedObjects 연결 동작 확인용 예시 항목입니다. 편집하거나 삭제하세요.'
 attributes:
