@@ -1,0 +1,91 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../../../components/BaseHead.astro';
+import Footer from '../../../components/Footer.astro';
+import Header from '../../../components/Header.astro';
+import { getGroupMemberTypes } from '../../../lib/objectNav';
+
+export async function getStaticPaths() {
+	const allObjects = await getCollection('objects');
+	const groups = getGroupMemberTypes();
+	return Object.entries(groups).map(([group, memberTypes]) => ({
+		params: { group },
+		props: {
+			entries: allObjects
+				.filter((entry) => memberTypes.includes(entry.data.type))
+				.sort((a, b) => a.data.title.localeCompare(b.data.title)),
+		},
+	}));
+}
+
+interface Props {
+	entries: Awaited<ReturnType<typeof getCollection<'objects'>>>;
+}
+
+const { entries } = Astro.props;
+const { group } = Astro.params;
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${group} — 객체`} description={`${group} 그룹에 속한 객체 목록`} />
+		<style>
+			main {
+				width: 720px;
+			}
+			ul {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			li {
+				padding: 1em 0;
+				border-bottom: 1px solid var(--rule);
+			}
+			a {
+				display: block;
+				text-decoration: none;
+				color: inherit;
+			}
+			a:hover .title {
+				color: var(--accent-bright);
+			}
+			.type-tag {
+				font-family: var(--font-sans);
+				font-size: 0.75em;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--accent-bright);
+				margin: 0 0 0.3em 0;
+			}
+			.title {
+				margin: 0 0 0.2em 0;
+			}
+			.description {
+				font-family: var(--font-serif);
+				color: var(--ink-dim);
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<ul>
+				{
+					entries.map((entry) => (
+						<li>
+							<a href={`${import.meta.env.BASE_URL}objects/${entry.id}/`}>
+								<p class="type-tag">{entry.data.type}</p>
+								<h3 class="title">{entry.data.title}</h3>
+								{entry.data.description && <p class="description">{entry.data.description}</p>}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>

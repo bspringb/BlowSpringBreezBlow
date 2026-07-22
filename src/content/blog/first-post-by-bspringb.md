@@ -2,7 +2,7 @@
 title: '첫글 테스트'
 description: '첫번째 테스트입니다'
 pubDate: 'Jul 22 2026'
-categories: [잡설]
+categories: [테스트, 테스트2]
 relatedObjects: [John Ford]
 ---
 

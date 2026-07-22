@@ -14,6 +14,15 @@ interface Props {
 
 const { object, relatedObjects, relatedDocs } = Astro.props;
 const { type, title, description, attributes, image } = object;
+
+// attribute 값이 relatedObjects 중 하나의 제목과 같으면 그 객체로 링크한다.
+const attributeRows = attributes
+	? Object.entries(attributes).map(([key, value]) => ({
+			key,
+			value,
+			linked: relatedObjects.find((related) => related.data.title === String(value)),
+		}))
+	: [];
 ---
 
 <!doctype html>
@@ -68,14 +77,16 @@ const { type, title, description, attributes, image } = object;
 				font-family: var(--font-sans);
 				font-size: 0.9em;
 				border-collapse: collapse;
+				table-layout: fixed;
 			}
 			table.attributes th {
+				width: 6em;
 				text-align: left;
 				color: var(--ink-dim);
 				font-weight: 400;
 				padding: 0.3em 1em 0.3em 0;
 				vertical-align: top;
-				white-space: nowrap;
+				overflow-wrap: break-word;
 			}
 			table.attributes td {
 				padding: 0.3em 0;
@@ -148,13 +159,19 @@ const { type, title, description, attributes, image } = object;
 						)
 					}
 					{
-						attributes && Object.keys(attributes).length > 0 && (
+						attributeRows.length > 0 && (
 							<table class="attributes">
 								<tbody>
-									{Object.entries(attributes).map(([key, value]) => (
+									{attributeRows.map(({ key, value, linked }) => (
 										<tr>
 											<th>{key}</th>
-											<td>{value}</td>
+											<td>
+												{linked ? (
+													<a href={`${import.meta.env.BASE_URL}objects/${linked.id}/`}>{value}</a>
+												) : (
+													value
+												)}
+											</td>
 										</tr>
 									))}
 								</tbody>

@@ -2,7 +2,7 @@
 title: 'Second post'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 15 2022'
-categories: [카테고리 테스트3,카테고리 테스트1]
+categories: [astro]
 heroImage: '../../assets/blog-placeholder-4.jpg'
 ---
 
