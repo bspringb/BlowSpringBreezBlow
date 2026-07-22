@@ -187,7 +187,7 @@ const { type, title, description, attributes, image } = object;
 							<ul class="doc-list">
 								{relatedDocs.map((doc) => (
 									<li>
-										<a href={`${import.meta.env.BASE_URL}blog/${doc.id}/`}>
+										<a href={`${import.meta.env.BASE_URL}texts/${doc.id}/`}>
 											<p class="doc-title">{doc.data.title}</p>
 											<p class="doc-date">{doc.data.pubDate.toLocaleDateString('ko-KR')}</p>
 										</a>

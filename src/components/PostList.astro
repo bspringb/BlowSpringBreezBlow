@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { CATEGORY_META } from '../content/categories';
 import FormattedDate from './FormattedDate.astro';
 
 interface Props {
@@ -14,13 +13,11 @@ const { posts } = Astro.props;
 	{
 		posts.map((post) => (
 			<li>
-				<a href={`${import.meta.env.BASE_URL}blog/${post.id}/`}>
+				<a href={`${import.meta.env.BASE_URL}texts/${post.id}/`}>
 					<p class="date">
 						<FormattedDate date={post.data.pubDate} />
 						{post.data.categories && post.data.categories.length > 0 && (
-							<span class="categories">
-								{post.data.categories.map((key) => CATEGORY_META[key].label).join(' · ')}
-							</span>
+							<span class="categories">{post.data.categories.join(' · ')}</span>
 						)}
 					</p>
 					<h3 class="title">{post.data.title}</h3>
@@ -55,8 +52,6 @@ const { posts } = Astro.props;
 	.categories {
 		margin-left: 0.6em;
 		color: var(--accent-bright);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
 	}
 	.title {
 		margin: 0 0 0.3em 0;

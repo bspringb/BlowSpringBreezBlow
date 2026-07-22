@@ -1,0 +1,46 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import CategoryTabs from '../../components/CategoryTabs.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import PostList from '../../components/PostList.astro';
+import { getAllCategories, getPostsByCategory } from '../../lib/categories';
+import { SITE_TITLE } from '../../consts';
+
+export async function getStaticPaths() {
+	const categories = await getAllCategories();
+	return Promise.all(
+		categories.map(async ({ name }) => ({
+			params: { category: name },
+			props: { posts: await getPostsByCategory(name) },
+		})),
+	);
+}
+
+interface Props {
+	posts: Awaited<ReturnType<typeof getPostsByCategory>>;
+}
+
+const { posts } = Astro.props;
+const { category } = Astro.params;
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${category} — ${SITE_TITLE}`} description={`${category} 카테고리 글 목록`} />
+		<style>
+			main {
+				width: 720px;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<CategoryTabs active={category} />
+			<PostList posts={posts} />
+		</main>
+		<Footer />
+	</body>
+</html>

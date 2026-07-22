@@ -1,7 +1,6 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { CATEGORY_KEYS } from './content/categories';
 
 // Astro의 기본 id 생성은 파일명을 slugify(소문자화)한다. objects는
 // frontmatter에서 파일명으로 서로를 참조하므로, 대소문자가 그대로 유지되는
@@ -20,7 +19,7 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: z.optional(image()),
-			categories: z.array(z.enum(CATEGORY_KEYS)).optional(),
+			categories: z.array(z.string()).optional(),
 			relatedObjects: z.array(reference('objects')).optional(),
 		}),
 });

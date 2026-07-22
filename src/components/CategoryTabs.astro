@@ -1,25 +1,25 @@
 ---
-import { CATEGORY_KEYS, CATEGORY_META, type CategoryKey } from '../content/categories';
+import { getAllCategories } from '../lib/categories';
 
 interface Props {
-	active: 'all' | CategoryKey;
+	active: 'all' | string;
 }
 
 const { active } = Astro.props;
-const sorted = [...CATEGORY_KEYS].sort((a, b) => CATEGORY_META[a].order - CATEGORY_META[b].order);
+const categories = await getAllCategories();
 ---
 
 <nav class="category-tabs">
-	<a href={`${import.meta.env.BASE_URL}blog/`} class:list={[{ active: active === 'all' }]}>
+	<a href={`${import.meta.env.BASE_URL}texts/`} class:list={[{ active: active === 'all' }]}>
 		전체글
 	</a>
 	{
-		sorted.map((key) => (
+		categories.map(({ name }) => (
 			<a
-				href={`${import.meta.env.BASE_URL}blog/${key}/`}
-				class:list={[{ active: active === key }]}
+				href={`${import.meta.env.BASE_URL}texts/${name}/`}
+				class:list={[{ active: active === name }]}
 			>
-				{CATEGORY_META[key].label}
+				{name}
 			</a>
 		))
 	}

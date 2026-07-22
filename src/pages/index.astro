@@ -1,17 +1,41 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
+import CategoryGrid from '../components/react/CategoryGrid';
+import Sidebar from '../components/react/Sidebar';
 import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
-import PostList from '../components/PostList.astro';
+import { getAllCategories, getPostsByCategory } from '../lib/categories';
+import type { HomePost } from '../lib/homeTypes';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+const basePath = import.meta.env.BASE_URL;
+
+const posts = await getCollection('blog');
+const allPosts: HomePost[] = posts.map((post) => ({
+	id: post.id,
+	title: post.data.title,
+	pubDate: post.data.pubDate.toISOString(),
+}));
+
+const categorySummaries = await getAllCategories();
+const categories = await Promise.all(
+	categorySummaries.map(async ({ name, count }) => {
+		const categoryEntries = await getPostsByCategory(name);
+		return {
+			name,
+			count,
+			posts: categoryEntries.map((post) => ({
+				id: post.id,
+				title: post.data.title,
+				pubDate: post.data.pubDate.toISOString(),
+			})),
+		};
+	}),
 );
-const [featured, ...rest] = posts;
+const categoryPosts: Record<string, HomePost[]> = Object.fromEntries(
+	categories.map((c) => [c.name, c.posts]),
+);
 ---
 
 <!doctype html>
@@ -20,68 +44,54 @@ const [featured, ...rest] = posts;
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
 			main {
-				width: 800px;
+				width: 1100px;
+				max-width: calc(100% - 2em);
+				margin: 0 auto;
+				padding: 2em 1em;
+				display: grid;
+				grid-template-columns: 220px 1fr;
+				gap: 3em;
+				align-items: start;
 			}
-			.featured {
-				padding-bottom: 2em;
+			@media (max-width: 800px) {
+				main {
+					grid-template-columns: 1fr;
+				}
+			}
+			.category-index {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 1em;
+				font-family: var(--font-sans);
+				font-size: 0.85em;
+				color: var(--ink-dim);
 				margin-bottom: 2em;
+				padding-bottom: 1em;
 				border-bottom: 1px solid var(--rule);
 			}
-			.kicker {
-				font-family: var(--font-sans);
-				font-size: 0.85em;
-				text-transform: uppercase;
-				letter-spacing: 0.1em;
-				color: var(--accent-bright);
-				margin-bottom: 0.5em;
-			}
-			.featured a {
+			.category-index a {
+				color: var(--ink-dim);
 				text-decoration: none;
-				color: inherit;
 			}
-			.featured h1 {
-				font-size: 2.4em;
-				margin-bottom: 0.4em;
-			}
-			.featured .dek {
-				font-family: var(--font-serif);
-				font-size: 1.2em;
-				color: var(--ink-dim);
-				margin-bottom: 0.5em;
-			}
-			.featured .date {
-				font-family: var(--font-sans);
-				font-size: 0.85em;
-				color: var(--ink-dim);
-			}
-			.featured img {
-				margin-top: 1em;
+			.category-index a:hover {
+				color: var(--accent-bright);
 			}
 		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			{
-				featured && (
-					<section class="featured">
-						<a href={`${import.meta.env.BASE_URL}blog/${featured.id}/`}>
-							<p class="kicker">최신 글</p>
-							<h1>{featured.data.title}</h1>
-							<p class="dek">{featured.data.description}</p>
-							<p class="date">
-								<FormattedDate date={featured.data.pubDate} />
-							</p>
-							{featured.data.heroImage && (
-								<Image width={800} height={400} src={featured.data.heroImage} alt="" />
-							)}
-						</a>
-					</section>
-				)
-			}
-			<section>
-				<PostList posts={rest} />
-			</section>
+			<Sidebar client:load allPosts={allPosts} categoryPosts={categoryPosts} basePath={basePath} />
+			<div>
+				<nav class="category-index">
+					{
+						categories.map(({ name }) => (
+							<a href={`#category-${encodeURIComponent(name)}`}>{name}</a>
+						))
+					}
+				</nav>
+				<CategoryGrid client:load categories={categories} basePath={basePath} />
+			</div>
 		</main>
 		<Footer />
 	</body>
