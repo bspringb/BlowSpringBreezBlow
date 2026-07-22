@@ -68,53 +68,40 @@ export const CATEGORY_META: Record<CategoryKey, { label: string; order: number }
 [외부 사이트](https://example.com)
 ```
 
-## 영화(films) / 감독(directors) 쓰기
+## 객체(objects) 쓰기 — 감독/영화/단어/장소 등 뭐든
 
-scaruffi.com처럼 감독별 필모그래피와 리뷰를 다루는 컬렉션입니다. `blog`와 별개의 컬렉션이라, 카테고리 시스템과는 무관하게 동작합니다.
+scaruffi.com처럼 실체(감독, 영화, 단어, 장소, 여행지...)를 다루는 컬렉션입니다. `blog`와 별개이고, 카테고리 시스템과도 무관하게 동작합니다. **`directors`/`films`처럼 타입마다 컬렉션을 따로 만들지 않습니다** — `objects` 컬렉션 하나에 `type` 필드로 종류를 구분합니다.
 
-### 감독 추가
-
-`src/content/directors/`에 파일을 추가합니다. 파일 이름(확장자 제외)이 곧 감독 ID이자 URL(`/directors/<id>/`)입니다.
+`src/content/objects/`에 파일을 추가합니다. 파일 이름(확장자 제외)이 곧 객체 ID이자 URL(`/objects/<id>/`)입니다.
 
 ```yaml
 ---
+type: director              # 자유 문자열 — director, film, word, place, travel-spot 뭐든
 title: '감독 이름'
-description: '한 줄 소개'   # 선택
-photo: ../../assets/xxx.jpg  # 선택
+description: '한 줄 소개'    # 선택
+attributes:                 # 선택, 자유 키-값. 타입마다 다른 속성을 써도 됩니다
+  국가: 브라질
+  활동시기: 1950-현재
+relatedObjects: [다른객체파일명]  # 선택 — 다른 objects 항목을 참조 (예: 영화→감독)
+image: ../../assets/xxx.jpg  # 선택
 ---
-본문에는 약력/에세이를 원하는 만큼 길게 씁니다.
+본문에는 소개/에세이를 원하는 만큼 길게 씁니다.
 ```
 
-### 영화 추가
+- **새 객체 타입을 추가하는 데 코드 수정이 필요 없습니다.** `type: word`라고 처음 쓰는 파일을 추가하면 그걸로 끝 — `/objects/type/word` 목록 페이지가 빌드 시 자동으로 생깁니다.
+- `attributes`는 완전히 자유 형식이라 타입마다 다른 속성 이름을 써도 됩니다(감독은 국가/활동시기, 단어는 어원/최초용례 등). 대신 오타를 컴파일 타임에 잡아주지는 않습니다.
+- `relatedObjects`에 존재하지 않는 파일명을 적으면(오타 포함) **빌드가 에러로 실패**합니다 — `reference()`가 검증해주기 때문입니다. 값은 대상 파일의 **파일명(확장자 제외)과 정확히 일치**해야 합니다.
+- 객체 상세 페이지(`/objects/<id>/`)에는 관련 객체와 관련 문서가 **양방향으로 자동 표시**됩니다 — A가 B를 `relatedObjects`로 가리키면, B의 페이지에도 A가 뜹니다 (별도로 양쪽에 다 적을 필요 없음). 이 로직은 `src/lib/objects.ts`의 `getRelatedObjects`/`getRelatedDocs`가 처리합니다.
+- 블로그 글에서도 `relatedObjects: [파일명]`으로 객체를 연결할 수 있습니다 — 그 글은 카테고리와 별개로, 연결한 객체의 "관련 문서" 목록에 나타납니다.
 
-`src/content/films/`에 파일을 추가합니다. `director` 값은 위에서 만든 감독 파일의 **파일명(확장자 제외)**과 정확히 일치해야 합니다.
+`src/content/objects/example-director.md`, `example-film.md`는 이 구조가 실제로 동작하는지 확인하기 위한 예시입니다. 자유롭게 수정하거나 지우세요.
 
-```yaml
----
-title: '영화 제목'
-description: '한 줄 로그라인'   # 선택
-director: 감독파일명           # 필수 — directors 컬렉션의 파일 ID를 참조
-year: 2024
-genre: [drama, thriller]       # 선택, 자유 문자열
-rating: 3.5                    # 선택, 0~5점, 소수점 가능 (예: 2.1, 3.5)
-pubDate: 'Jul 22 2026'
-poster: ../../assets/xxx.jpg   # 선택
----
-본문은 블로그 글처럼 긴 리뷰/에세이를 써도 됩니다.
-```
+## 새 페이지 종류(리스트/상세 UI)를 추가하려면
 
-`director`가 존재하지 않는 파일명을 가리키면(오타 포함) **빌드가 에러로 실패**합니다 — `reference()`가 빌드 타임에 검증해주기 때문입니다. 영화 상세 페이지(`/films/<id>/`)에는 감독 링크·연도·평점이 자동으로 뜨고, 감독 상세 페이지(`/directors/<id>/`)에는 그 감독의 필모그래피가 자동으로 모여서 뜹니다 (별도 연결 작업 불필요).
+객체 "타입"을 추가하는 건 위처럼 코드 없이 되지만, `objects` 자체와 별개로 완전히 다른 성격의 콘텐츠(예: 댓글, 갤러리)를 새로 만들고 싶다면 아직은 컬렉션을 새로 정의해야 합니다.
 
-`src/content/directors/example-director.md`, `src/content/films/example-film.md`는 이 구조가 실제로 동작하는지 확인하기 위한 예시입니다. 자유롭게 수정하거나 지우세요.
-
-## 나중에 또 다른 새 "섹션"(컬렉션)을 추가하려면
-
-`films`/`directors`가 정확히 이 패턴의 실제 예시입니다. 책, 음반 등을 더 추가하고 싶으면 같은 방식을 따르세요.
-
-1. **콘텐츠 폴더 + 스키마 추가** (`src/content.config.ts`) — `films`/`directors` 정의를 그대로 참고하세요.
+1. **콘텐츠 폴더 + 스키마 추가** (`src/content.config.ts`) — `objects` 정의를 참고하세요.
 2. **컬렉션 간 링크는 `reference()`로.** 참조 대상 ID가 실제로 존재하는지 빌드 타임에 검증됩니다.
-3. **리스트는 `PostList.astro`/`FilmList.astro`처럼 컬렉션 전용 컴포넌트를 하나 만들어 재사용.** 컬렉션마다 보여줄 메타데이터(카테고리 배지 vs 감독·평점)가 달라서 완전히 공용화하기보다 컬렉션별로 얇은 리스트 컴포넌트를 두는 쪽이 더 명확합니다.
-4. **상세 레이아웃도 `BlogPost.astro`/`FilmPost.astro`처럼 컬렉션별로 하나씩.** 킥커-헤드라인-바이라인-본문 구조는 통일하되, 필드가 다르면 억지로 하나의 컴포넌트로 합치지 마세요.
-5. **라우팅은 `getStaticPaths`로 자동 생성.** `src/pages/films/[...slug].astro`, `src/pages/directors/[...slug].astro`가 예시입니다.
+3. **리스트/상세 페이지는 `src/pages/objects/`처럼 `getStaticPaths` 기반 공용 템플릿으로.** 타입/카테고리를 가리지 않는 제네릭한 페이지 하나로 여러 종류를 처리하는 쪽이, 종류마다 페이지를 새로 만드는 것보다 낫습니다 (지금 `objects`가 정확히 이 패턴입니다).
 
 이 문서도 함께 갱신하는 것 잊지 마세요.

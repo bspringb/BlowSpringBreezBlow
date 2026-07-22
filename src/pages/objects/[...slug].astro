@@ -1,0 +1,23 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import ObjectPage from '../../layouts/ObjectPage.astro';
+import { getRelatedDocs, getRelatedObjects } from '../../lib/objects';
+
+export async function getStaticPaths() {
+	const objects = await getCollection('objects');
+	return objects.map((object) => ({
+		params: { slug: object.id },
+		props: object,
+	}));
+}
+type Props = CollectionEntry<'objects'>;
+
+const object = Astro.props;
+const { Content } = await render(object);
+const relatedObjects = await getRelatedObjects(object.id);
+const relatedDocs = await getRelatedDocs(object.id);
+---
+
+<ObjectPage object={object.data} relatedObjects={relatedObjects} relatedDocs={relatedDocs}>
+	<Content />
+</ObjectPage>

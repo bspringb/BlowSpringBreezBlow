@@ -4,13 +4,18 @@ import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
 
-const directors = await getCollection('directors');
+const objects = await getCollection('objects');
+const counts = new Map<string, number>();
+for (const entry of objects) {
+	counts.set(entry.data.type, (counts.get(entry.data.type) ?? 0) + 1);
+}
+const types = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 ---
 
 <!doctype html>
 <html lang="ko">
 	<head>
-		<BaseHead title="감독" description="감독 소개" />
+		<BaseHead title="객체" description="영화, 감독, 단어 등 객체 목록" />
 		<style>
 			main {
 				width: 720px;
@@ -21,24 +26,21 @@ const directors = await getCollection('directors');
 				padding: 0;
 			}
 			li {
-				padding: 1.2em 0;
+				padding: 1em 0;
 				border-bottom: 1px solid var(--rule);
 			}
 			a {
-				display: block;
+				display: flex;
+				justify-content: space-between;
 				text-decoration: none;
 				color: inherit;
 			}
-			.title {
-				margin: 0 0 0.3em 0;
-			}
-			a:hover .title {
+			a:hover {
 				color: var(--accent-bright);
 			}
-			.description {
-				font-family: var(--font-serif);
+			.count {
 				color: var(--ink-dim);
-				margin: 0;
+				font-family: var(--font-sans);
 			}
 		</style>
 	</head>
@@ -47,13 +49,11 @@ const directors = await getCollection('directors');
 		<main>
 			<ul>
 				{
-					directors.map((director) => (
+					types.map(([type, count]) => (
 						<li>
-							<a href={`${import.meta.env.BASE_URL}directors/${director.id}/`}>
-								<h3 class="title">{director.data.title}</h3>
-								{director.data.description && (
-									<p class="description">{director.data.description}</p>
-								)}
+							<a href={`${import.meta.env.BASE_URL}objects/type/${type}/`}>
+								<span>{type}</span>
+								<span class="count">{count}</span>
 							</a>
 						</li>
 					))

@@ -1,0 +1,206 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+
+interface Props {
+	object: CollectionEntry<'objects'>['data'];
+	relatedObjects: CollectionEntry<'objects'>[];
+	relatedDocs: CollectionEntry<'blog'>[];
+}
+
+const { object, relatedObjects, relatedDocs } = Astro.props;
+const { type, title, description, attributes, image } = object;
+---
+
+<!doctype html>
+<html lang="ko">
+	<head>
+		<BaseHead title={`${title} — ${SITE_TITLE}`} description={description ?? title} />
+		<style>
+			main {
+				width: calc(100% - 2em);
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 2em 1em;
+			}
+			.kicker {
+				font-family: var(--font-sans);
+				font-size: 0.85em;
+				text-transform: uppercase;
+				letter-spacing: 0.12em;
+				color: var(--accent-bright);
+				margin: 0 0 0.4em 0;
+			}
+			h1 {
+				margin-bottom: 1.5em;
+			}
+			.layout {
+				display: grid;
+				grid-template-columns: 2fr 1fr;
+				gap: 3em;
+				align-items: start;
+			}
+			@media (max-width: 800px) {
+				.layout {
+					grid-template-columns: 1fr;
+				}
+			}
+			.main-col {
+				font-family: var(--font-serif);
+			}
+			.image {
+				width: 240px;
+				max-width: 100%;
+				margin-bottom: 1.5em;
+			}
+			.image img {
+				display: block;
+				border-radius: 4px;
+				box-shadow: var(--box-shadow);
+			}
+			table.attributes {
+				width: 100%;
+				margin-bottom: 2em;
+				font-family: var(--font-sans);
+				font-size: 0.9em;
+				border-collapse: collapse;
+			}
+			table.attributes th {
+				text-align: left;
+				color: var(--ink-dim);
+				font-weight: 400;
+				padding: 0.3em 1em 0.3em 0;
+				vertical-align: top;
+				white-space: nowrap;
+			}
+			table.attributes td {
+				padding: 0.3em 0;
+			}
+			.section-heading {
+				font-family: var(--font-sans);
+				font-size: 0.85em;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				color: var(--ink-dim);
+				margin: 2em 0 1em 0;
+				border-bottom: 1px solid var(--rule);
+				padding-bottom: 0.5em;
+			}
+			.related-objects {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			.related-objects li {
+				margin-bottom: 0.5em;
+			}
+			.related-objects a {
+				color: var(--ink);
+				text-decoration: underline;
+			}
+			.related-objects a:hover {
+				color: var(--accent-bright);
+			}
+			.side-col .doc-list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			.side-col .doc-list li {
+				padding: 1em 0;
+				border-bottom: 1px solid var(--rule);
+			}
+			.side-col .doc-list a {
+				display: block;
+				text-decoration: none;
+				color: inherit;
+			}
+			.side-col .doc-list a:hover .doc-title {
+				color: var(--accent-bright);
+			}
+			.doc-title {
+				font-family: var(--font-serif);
+				margin: 0 0 0.2em 0;
+			}
+			.doc-date {
+				font-family: var(--font-sans);
+				font-size: 0.8em;
+				color: var(--ink-dim);
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<p class="kicker">{type}</p>
+			<h1>{title}</h1>
+			<div class="layout">
+				<div class="main-col">
+					{
+						image && (
+							<div class="image">
+								<Image width={240} height={240} src={image} alt="" />
+							</div>
+						)
+					}
+					{
+						attributes && Object.keys(attributes).length > 0 && (
+							<table class="attributes">
+								<tbody>
+									{Object.entries(attributes).map(([key, value]) => (
+										<tr>
+											<th>{key}</th>
+											<td>{value}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						)
+					}
+					<slot />
+					{
+						relatedObjects.length > 0 && (
+							<>
+								<p class="section-heading">관련 객체</p>
+								<ul class="related-objects">
+									{relatedObjects.map((related) => (
+										<li>
+											<a href={`${import.meta.env.BASE_URL}objects/${related.id}/`}>
+												{related.data.title}
+											</a>
+											<span> ({related.data.type})</span>
+										</li>
+									))}
+								</ul>
+							</>
+						)
+					}
+				</div>
+				<div class="side-col">
+					<p class="section-heading">관련 문서</p>
+					{
+						relatedDocs.length > 0 ? (
+							<ul class="doc-list">
+								{relatedDocs.map((doc) => (
+									<li>
+										<a href={`${import.meta.env.BASE_URL}blog/${doc.id}/`}>
+											<p class="doc-title">{doc.data.title}</p>
+											<p class="doc-date">{doc.data.pubDate.toLocaleDateString('ko-KR')}</p>
+										</a>
+									</li>
+								))}
+							</ul>
+						) : (
+							<p class="doc-date">아직 연결된 글이 없습니다.</p>
+						)
+					}
+				</div>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>

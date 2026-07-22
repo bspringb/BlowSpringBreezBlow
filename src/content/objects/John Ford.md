@@ -1,4 +1,5 @@
 ---
+type: director
 title: '존 포드'
 description: '한 줄 소개'
 ---
