@@ -6,8 +6,8 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://bspringb.github.io/blowspringbreezblow/',
-	base: '/blowspringbreezblow',
+	site: 'https://bspringb.github.io',
+	base: '/blowspringbreezeblow',
 	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
