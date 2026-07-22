@@ -19,3 +19,8 @@ pubDate: 'Jul 22 2026'
 
 줄 바꿈
 
+[링크](https://bspringb.github.io/blowspringbreezeblow/blog/using-mdx/)
+
+[사이트 링크](https://www.economist.com)
+
+

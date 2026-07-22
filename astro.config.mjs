@@ -11,26 +11,22 @@ export default defineConfig({
 	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
-			provider: fontProviders.local(),
-			name: 'Atkinson',
-			cssVariable: '--font-atkinson',
+			provider: fontProviders.google(),
+			name: 'Noto Serif KR',
+			cssVariable: '--font-serif',
+			fallbacks: ['serif'],
+			weights: [400, 700],
+			subsets: ['korean', 'latin'],
+			display: 'optional',
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Noto Sans KR',
+			cssVariable: '--font-sans',
 			fallbacks: ['sans-serif'],
-			options: {
-				variants: [
-					{
-						src: ['./src/assets/fonts/atkinson-regular.woff'],
-						weight: 400,
-						style: 'normal',
-						display: 'swap',
-					},
-					{
-						src: ['./src/assets/fonts/atkinson-bold.woff'],
-						weight: 700,
-						style: 'normal',
-						display: 'swap',
-					},
-				],
-			},
+			weights: [400, 700],
+			subsets: ['korean', 'latin'],
+			display: 'optional',
 		},
 	],
 });

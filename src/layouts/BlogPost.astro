@@ -21,33 +21,44 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				margin: 0;
 			}
 			.hero-image {
-				width: 100%;
+				width: 400px;
+				max-width: calc(100% - 2em);
+				margin: 0 auto 2em auto;
 			}
 			.hero-image img {
 				display: block;
 				margin: 0 auto;
-				border-radius: 12px;
+				border-radius: 4px;
 				box-shadow: var(--box-shadow);
 			}
 			.prose {
-				width: 720px;
+				width: 68ch;
 				max-width: calc(100% - 2em);
 				margin: auto;
 				padding: 1em;
-				color: rgb(var(--gray-dark));
+				color: var(--ink);
 			}
 			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+				margin-bottom: 2em;
+				padding: 2em 0 1em 0;
+			}
+			.kicker {
+				font-family: var(--font-sans);
+				font-size: 0.85em;
+				text-transform: uppercase;
+				letter-spacing: 0.12em;
+				color: var(--accent-bright);
+				margin: 0 0 0.6em 0;
 			}
 			.title h1 {
-				margin: 0 0 0.5em 0;
+				margin: 0 0 0.6em 0;
+				line-height: 1.15;
 			}
 			.date {
+				font-family: var(--font-sans);
+				font-size: 0.85em;
 				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+				color: var(--ink-dim);
 			}
 			.last-updated-on {
 				font-style: italic;
@@ -64,6 +75,8 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 				</div>
 				<div class="prose">
 					<div class="title">
+						<p class="kicker">Essay</p>
+						<h1>{title}</h1>
 						<div class="date">
 							<FormattedDate date={pubDate} />
 							{
@@ -74,7 +87,6 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 								)
 							}
 						</div>
-						<h1>{title}</h1>
 						<hr />
 					</div>
 					<slot />
